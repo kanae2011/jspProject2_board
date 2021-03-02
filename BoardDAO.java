@@ -22,7 +22,7 @@ public class BoardDAO {
 	ResultSet rs = null;
 	
 	//1.게시판 목록
-	public List<BoardVO> list() throws Exception{
+	public List<BoardVO> list(PageObject pageObject) throws Exception{
 		List<BoardVO> list = null;
 		try {
 			//1.드라이버 확인은 DBInfo + 2.연결
@@ -30,8 +30,8 @@ public class BoardDAO {
 			//3.sql -> DBSQL + 4.실행객체 + 데이터 셋팅
 			System.out.println(DBSQL.BOARD_LIST);
 			pstmt = con.prepareStatement(DBSQL.BOARD_LIST);
-			pstmt.setLong(1, 1); // 시작 번호
-			pstmt.setLong(2, 10); // 끝 번호 
+			pstmt.setLong(1, pageObject.getStartRow()); // 시작 번호
+			pstmt.setLong(2, pageObject.getEndRow()); // 끝 번호 
 			//5.실행
 			rs = pstmt.executeQuery();
 			//6.표시 -> 데이터 담기 
@@ -62,7 +62,29 @@ public class BoardDAO {
 	
 	//1-1.전체 갯수 구하기
 	public long getTotalRow() throws Exception{
-		return 0;
+		long result = 0;
+		try {
+			con=DBInfo.getConnection();
+			System.out.println("BoardDAO.getTotlaRow().con : " + con);
+			pstmt= con.prepareStatement(DBSQL.BOARD_GET_TOTALROW);
+			System.out.println("BoardDAO.getTotlaRow().pstmt : " + pstmt);
+			rs=pstmt.executeQuery();
+			System.out.println("BoardDAO.getTotlaRow().rs : " + rs);
+			
+			//rs출력은 가능하나 rs.next()는 데이터가 넘어가므로 안됨 
+			if(rs!=null && rs.next()) {
+				result = rs.getLong(1);
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+;		throw new Exception("게시판 전제 갯수 가져오는  DB처리중 오류");
+		}finally {
+			DBInfo.close(con, pstmt,rs);
+		}
+		System.out.println("BoardDAO.getTotlaRow().result : " + result);
+		return result;
+	}
 	}
 	
 	//2.게시판 글보기
