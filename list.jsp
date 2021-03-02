@@ -6,13 +6,31 @@
     pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <% 
-//자바 코드 부분 .JSP-Service-DAO
+//페이지 처리를 위한 프로그램
+//페이지 처리를 위한 객체 사용
+PageObject pageObject = new PageObject();
+//페이지에 대한 정보를 받음 
+//page는 jsp에서 기본객체로 사용하고 있음->page의 정보가 담겨져 있음.때문에 다른 이름으로 
+String strCurPage = request.getParameter("page");
+//넘어오는 페이지가 있는 경우는 현재 페이지로 셋팅 , 그렇지 않으면 1이 셋팅 
+if(strCurPage != null) pageObject.setPage(Integer.parseInt(strCurPage));
+//한 페이지당 표시할 데이터의 수를 받음 
+String strPerPageNum = request.getParameter("perPageNum");
+//한 페이지당 표시할 데이터 수가 안넘어오면 10으로 셋팅. 넘어오면 넘어오는 데이터를 사용 
+if(strPerPageNum != null) pageObject.setPerPageNum(Integer.parseInt(strPerPageNum));
+//넘어온 데이터 확인
+System.out.println("strCurPage = " + strCurPage + ", perPageNum = " + strPerPageNum);
+//PageObject  확인
+System.out.println("pageObject = " + pageObject);
+
+
 String url = request.getServletPath();
 @SuppressWarnings("unchecked")
-List<BoardVO> list = (List<BoardVO>)ExeService.execute(Beans.get(url), null);
+List<BoardVO> list = (List<BoardVO>)ExeService.execute(Beans.get(url), pageObject);
 
 //서버 객체 requset 에 담음
 request.setAttribute("list", list);
+request.setAttribute("pageObject", pageObject); //페이지를 보여주기 위해 서버 객체에 담음 
 
 
 %>
@@ -79,6 +97,12 @@ $(function () { //jQuery에서 익명함수를 전달해서 저장해놨다가 D
 		<!-- 데이터가 있는 만큼 반복이 되는  끝 부분 -->
 	</tbody>
 	<tfoot>
+		<tr>
+			
+			<td colspan="5">
+			<pageObject:pageNav listURI="list.jsp" pageObject="${pageObject }"/>
+			</td>
+		</tr>
 		<tr>
 			<td colspan="5">
 			<a href = "writeForm.jsp" class="btn btn-default">글쓰기</a>
